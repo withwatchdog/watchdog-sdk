@@ -1,0 +1,7 @@
+include README.md LICENSE ADAPTER_VERIFICATION.md
+recursive-include examples *.py *.md
+recursive-include tests *.py
+global-exclude *.py[cod]
+global-exclude .DS_Store
+prune .git
+prune .venv

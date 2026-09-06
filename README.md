@@ -7,14 +7,17 @@ queue. Monitoring outages do not raise exceptions into application code.
 ## Install and configure
 
 ```bash
-python -m pip install ./sdk
-export WATCHDOG_URL="https://your-watchdog-api.example"
+python -m pip install watchdog-agent-sdk
+export WATCHDOG_URL="https://withwatchdog.com"
 export WATCHDOG_API_KEY="your-ingest-key"
 ```
 
 The distribution is `watchdog-agent-sdk`; its import is `watchdog_agent`. This
 avoids colliding with the unrelated Python filesystem package named `watchdog`.
 The base SDK has no runtime dependencies and supports Python 3.10 or newer.
+
+For local development, clone this repository and run `python -m pip install .`
+from its root. Self-hosted installations can set `WATCHDOG_URL` to their API origin.
 
 Register an agent and a job in the dashboard, then use the job ID or slug:
 
@@ -92,7 +95,7 @@ completes without observing cancellation, the action is acknowledged as failed.
 Retry commands require a customer runtime webhook/controller; this client does
 not retain business input or execute customer code again.
 
-The included [signed control adapter](examples/CONTROL_ADAPTER.md) implements a
+The included [signed control adapter](https://github.com/withwatchdog/watchdog-sdk/blob/main/examples/CONTROL_ADAPTER.md) implements a
 customer-owned callback endpoint with cancellation, retry, fallback allowlisting,
 missed-slot correlation, HMAC verification, and a durable action ledger. Its local
 demo executes a supplied application function and writes report files.
@@ -104,13 +107,14 @@ real-time spend ceiling.
 ## OpenAI Agents adapter
 
 ```bash
-python -m pip install './sdk[openai]'
+python -m pip install 'watchdog-agent-sdk[openai]'
 ```
 
 The optional extra pins the verified combination `openai-agents==0.8.4` and
 `openai==2.19.0`. Run the integration suite when upgrading either dependency;
 the upstream Agents version's broad dependency range also permits a newer,
-incompatible usage schema. Details are in `ADAPTER_VERIFICATION.md`.
+incompatible usage schema. Details are in
+[ADAPTER_VERIFICATION.md](https://github.com/withwatchdog/watchdog-sdk/blob/main/ADAPTER_VERIFICATION.md).
 
 ```python
 from agents import Runner, RunConfig
@@ -214,11 +218,12 @@ after cancellation takes effect, or `status: "failed"` when it cannot be applied
 ## Tests
 
 ```bash
-cd sdk
+python -m pip install '.[openai]'
 python -m unittest discover -s tests -v
 ```
 
-Tests cover outages, queue saturation, bounded shutdown, retry idempotency,
+Run these commands from the cloned repository root. Tests cover outages,
+queue saturation, bounded shutdown, retry idempotency,
 privacy, concurrent event sequences, sync/async cancellation acknowledgments,
 tool failures, outcomes, and hook mapping without requiring a model API key.
 
@@ -231,7 +236,7 @@ Add `run.progress()` after meaningful completed work, then explicitly enable a m
 Install without repository access:
 
 ```sh
-python -m pip install https://withwatchdog.com/downloads/watchdog_agent_sdk-0.1.0.tar.gz
+python -m pip install watchdog-agent-sdk==0.1.0
 ```
 
-This is Watchdog's source distribution, not the unrelated `watchdog` filesystem package.
+Use `watchdog-agent-sdk`, not the unrelated `watchdog` filesystem package.
