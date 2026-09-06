@@ -21,8 +21,8 @@ import re
 import secrets
 import threading
 import time
-from typing import Any, Callable, Iterator
-from urllib.error import HTTPError, URLError
+from typing import Any, Callable, Iterator, Literal
+from urllib.error import HTTPError
 from urllib.parse import quote, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 import uuid
@@ -98,7 +98,7 @@ class Watchdog:
         headers: dict[str, str] | None = None,
         _transport: Callable[[str, str, bytes | None], Any] | None = None,
     ) -> None:
-        self.base_url = (base_url or os.getenv("WATCHDOG_URL", "http://localhost:3000")).rstrip("/")
+        self.base_url = (base_url or os.environ.get("WATCHDOG_URL", "http://localhost:3000")).rstrip("/")
         parsed = urlsplit(self.base_url)
         local = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
         if parsed.scheme not in {"http", "https"} or not parsed.hostname:
@@ -156,7 +156,7 @@ class Watchdog:
                 "Authorization": "Bearer " + self._api_key,
                 "Content-Type": "application/json",
                 "Accept": "application/json",
-                "User-Agent": "watchdog-agent-sdk/0.1.0",
+                "User-Agent": "watchdog-agent-sdk/0.2.0",
             },
         )
         with self._opener.open(request, timeout=self.timeout) as response:
@@ -265,14 +265,14 @@ class Watchdog:
     def __enter__(self) -> Watchdog:
         return self
 
-    def __exit__(self, exc_type, exc, tb) -> bool:
+    def __exit__(self, exc_type, exc, tb) -> Literal[False]:
         self.close()
         return False
 
     async def __aenter__(self) -> Watchdog:
         return self
 
-    async def __aexit__(self, exc_type, exc, tb) -> bool:
+    async def __aexit__(self, exc_type, exc, tb) -> Literal[False]:
         await asyncio.to_thread(self.close)
         return False
 
@@ -400,7 +400,7 @@ class Run:
         if self.client._closed or not self.cancellable or command.get("run_id", self.id) != self.id:
             return
         action_id = command.get("id") or command.get("action_id")
-        kind = command.get("type") or command.get("command") or command.get("action_type")
+        kind = command.get("type") or command.get("command") or command.get("action_type") or ""
         if not isinstance(action_id, str) or not action_id or len(action_id) > 200:
             return
         with self._lock:
@@ -438,7 +438,7 @@ class Run:
     def __enter__(self) -> Run:
         return self.start()
 
-    def __exit__(self, exc_type, exc, tb) -> bool:
+    def __exit__(self, exc_type, exc, tb) -> Literal[False]:
         if exc_type is None:
             self._finish("run.completed")
         elif issubclass(exc_type, (WatchdogCancelled, asyncio.CancelledError, KeyboardInterrupt, SystemExit)):
@@ -452,5 +452,5 @@ class Run:
         self._task = asyncio.current_task()
         return self.start()
 
-    async def __aexit__(self, exc_type, exc, tb) -> bool:
+    async def __aexit__(self, exc_type, exc, tb) -> Literal[False]:
         return self.__exit__(exc_type, exc, tb)

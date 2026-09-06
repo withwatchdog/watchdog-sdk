@@ -3,4 +3,4 @@
 from .client import Run, Watchdog, WatchdogCancelled
 
 __all__ = ["Run", "Watchdog", "WatchdogCancelled"]
-__version__ = "0.1.0"
+__version__ = "0.2.0"

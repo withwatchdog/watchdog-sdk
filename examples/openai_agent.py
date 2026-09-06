@@ -11,7 +11,7 @@ from watchdog_agent.openai_agents import WatchdogHooks
 async def main() -> None:
     agent = Agent(name="Report writer", instructions="Write a concise competitor report.", model=os.environ["OPENAI_MODEL"])
     async with Watchdog() as watchdog:
-        async with watchdog.run("daily-report", cancellable=True) as run:
+        async with watchdog.run(os.getenv("WATCHDOG_JOB", "sdk-example")) as run:
             result = await Runner.run(
                 agent,
                 "Draft a fictional competitor report for a test integration.",

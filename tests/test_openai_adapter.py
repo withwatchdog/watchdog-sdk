@@ -1,21 +1,19 @@
 """Contract tests with minimal framework-shaped objects; no model calls occur."""
 
 import json
-import sys
-from types import ModuleType, SimpleNamespace
+from types import SimpleNamespace
 import unittest
 
 try:
-    import agents
+    from watchdog_agent.openai_agents import WatchdogHooks
+    AVAILABLE = True
 except ImportError:
-    agents = ModuleType("agents")
-    agents.RunHooks = type("RunHooks", (), {})
-    sys.modules["agents"] = agents
+    AVAILABLE = False
 
 from watchdog_agent import Watchdog
-from watchdog_agent.openai_agents import WatchdogHooks
 
 
+@unittest.skipUnless(AVAILABLE, "Install the openai optional dependency")
 class HookTests(unittest.IsolatedAsyncioTestCase):
     async def test_hooks_ignore_sensitive_inputs_and_do_not_mark_business_progress(self):
         events = []
